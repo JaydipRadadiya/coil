@@ -9,6 +9,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.FloatRange
 import coil.annotation.BuilderMarker
 import coil.drawable.CrossfadeDrawable
+import coil.request.Request
 import coil.target.ImageViewTarget
 import coil.util.CoilUtils
 import coil.util.Utils
@@ -204,6 +205,20 @@ class ImageLoaderBuilder(private val context: Context) {
      * Set the default error drawable to use when a request fails.
      */
     fun error(drawable: Drawable?) = apply {
+        this.defaults = this.defaults.copy(error = drawable)
+    }
+
+    /**
+     * Set the default fallback drawable to use if [Request.data] is null.
+     */
+    fun fallback(@DrawableRes drawableResId: Int) = apply {
+        this.defaults = this.defaults.copy(error = context.getDrawableCompat(drawableResId))
+    }
+
+    /**
+     * Set the default fallback drawable to use if [Request.data] is null.
+     */
+    fun fallback(drawable: Drawable?) = apply {
         this.defaults = this.defaults.copy(error = drawable)
     }
 

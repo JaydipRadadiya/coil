@@ -16,5 +16,6 @@ data class DefaultRequestOptions(
     val allowRgb565: Boolean = false,
     val crossfadeMillis: Int = 0,
     val placeholder: Drawable? = null,
-    val error: Drawable? = null
+    val error: Drawable? = null,
+    val fallback: Drawable? = null
 )
