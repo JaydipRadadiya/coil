@@ -318,7 +318,9 @@ internal class RealImageLoader(
         if (cachedConfig >= requestedConfig) {
             return true
         }
-        if (request.allowRgb565 && cachedConfig == Bitmap.Config.RGB_565 && requestedConfig == Bitmap.Config.ARGB_8888) {
+        if (request.allowRgb565 &&
+            cachedConfig == Bitmap.Config.RGB_565 &&
+            requestedConfig == Bitmap.Config.ARGB_8888) {
             return true
         }
 
@@ -376,7 +378,7 @@ internal class RealImageLoader(
         // Transformations can only be applied to BitmapDrawables.
         val transformedResult = if (result.drawable is BitmapDrawable && request.transformations.isNotEmpty()) {
             val bitmap = request.transformations.fold(result.drawable.bitmap) { bitmap, transformation ->
-                transformation.transform(bitmapPool, bitmap).also { ensureActive() }
+                transformation.transform(bitmapPool, bitmap, size).also { ensureActive() }
             }
             result.copy(drawable = bitmap.toDrawable(context))
         } else {

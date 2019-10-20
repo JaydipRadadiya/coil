@@ -4,11 +4,11 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.O
-import androidx.collection.arraySetOf
 import coil.bitmappool.BitmapPool
 import coil.decode.DecodeResult
 import coil.fetch.DrawableResult
 import coil.request.RequestBuilder
+import coil.size.Size
 
 /**
  * An interface for making transformations to an image's pixel data.
@@ -20,13 +20,11 @@ import coil.request.RequestBuilder
 interface Transformation {
 
     companion object {
-        /**
-         * A whitelist of valid bitmap configs for the input and output bitmaps of [transform].
-         */
+        /** A whitelist of valid bitmap configs for the input and output bitmaps of [transform]. */
         internal val VALID_CONFIGS = if (SDK_INT >= O) {
-            arraySetOf(Bitmap.Config.ARGB_8888, Bitmap.Config.RGBA_F16)
+            arrayOf(Bitmap.Config.ARGB_8888, Bitmap.Config.RGBA_F16)
         } else {
-            arraySetOf(Bitmap.Config.ARGB_8888)
+            arrayOf(Bitmap.Config.ARGB_8888)
         }
     }
 
@@ -44,8 +42,12 @@ interface Transformation {
      * [BitmapPool] to get new [Bitmap]s. Also, you should return every Bitmap except the output [Bitmap] to the
      * pool so that they can be reused.
      *
+     * @param pool A [BitmapPool] which can be used to request [Bitmap] instances.
+     * @param input The input [Bitmap] to transform.
+     * @param size The size for the image request.
+     *
      * @see BitmapPool.get
      * @see BitmapPool.put
      */
-    suspend fun transform(pool: BitmapPool, input: Bitmap): Bitmap
+    suspend fun transform(pool: BitmapPool, input: Bitmap, size: Size): Bitmap
 }
