@@ -2,7 +2,9 @@ package coil
 
 import android.content.ContentResolver
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.widget.ImageView
 import androidx.test.core.app.ApplicationProvider
@@ -18,6 +20,7 @@ import coil.decode.Decoder
 import coil.decode.Options
 import coil.fetch.AssetUriFetcher
 import coil.request.CachePolicy
+import coil.request.NullRequestDataException
 import coil.size.PixelSize
 import coil.size.Size
 import coil.util.Utils
@@ -271,6 +274,44 @@ class RealImageLoaderIntegrationTest {
         val cacheFile = cacheFolder.listFiles().orEmpty().find { it.name.contains(Cache.key(url)) && it.length() == IMAGE_SIZE }
         assertNotNull(cacheFile, "Did not find the image file in the disk cache.")
         assertEquals(1, numDecodes)
+    }
+
+    @Test
+    fun nullRequestDataShowsFallbackDrawable() {
+        val error = ColorDrawable(Color.BLUE)
+        val fallback = ColorDrawable(Color.BLACK)
+
+        runBlocking {
+            suspendCancellableCoroutine<Unit> { continuation ->
+                var hasCalledTargetOnError = false
+
+                imageLoader.loadAny(context, null) {
+                    size(100, 100)
+                    error(error)
+                    fallback(fallback)
+                    target(
+                        onStart = { throw IllegalStateException() },
+                        onError = { drawable ->
+                            check(drawable === fallback)
+                            hasCalledTargetOnError = true
+                        },
+                        onSuccess = { throw IllegalStateException() }
+                    )
+                    listener(
+                        onStart = { throw IllegalStateException() },
+                        onSuccess = { _, _ -> throw IllegalStateException() },
+                        onCancel = { throw IllegalStateException() },
+                        onError = { _, throwable ->
+                            if (hasCalledTargetOnError && throwable is NullRequestDataException) {
+                                continuation.resume(Unit)
+                            } else {
+                                continuation.resumeWithException(throwable)
+                            }
+                        }
+                    )
+                }
+            }
+        }
     }
 
     private fun testLoad(data: Any, expectedSize: PixelSize = PixelSize(80, 100)) {
